@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views import View
+from django.views.generic import TemplateView
 
 
 class LoginView(View):
@@ -35,4 +36,15 @@ class EscolhaServicosView(View):
         }
         return render(request, self.template_name, context)
 
-    # ...existing code...
+
+class DashboardView(TemplateView):
+    template_name = "agendamento/dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Inclui informações do usuário da sessão, mantendo baixo acoplamento
+        context.update({
+            "name": self.request.session.get("user_name", ""),
+            "email": self.request.session.get("user_email", ""),
+        })
+        return context
