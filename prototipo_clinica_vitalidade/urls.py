@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.urls import path
-from agendamento.views import LoginView, EscolhaServicosView
+from django.contrib import admin
+from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('login/', LoginView.as_view(), name='login'),
-    path('escolha-servicos/', EscolhaServicosView.as_view(), name='escolha_servicos'),
+    path("admin/", admin.site.urls),
+    path("", include("agendamento.urls")),  # Inclui todas URLs do app
 ]

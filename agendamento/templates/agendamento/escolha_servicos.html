@@ -6,213 +6,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Serviços Disponíveis - Clínica Vitalidade</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         brand: {
-                            DEFAULT: '#004d5b', // Azul Petróleo da Logo
+                            DEFAULT: '#004d5b',
                             hover: '#003a45',
-                            accent: '#a8835d',  // Bege/Dourado
-                            light: '#f3f4f6',   // Cinza fundo
+                            accent: '#a8835d',
+                            light: '#f3f4f6'
                         }
                     },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
         }
     </script>
+
     <style>
-        /* Estilo para quando o serviço está indisponível pelo plano */
         .service-disabled {
             opacity: 0.5;
             filter: grayscale(100%);
-            pointer-events: none;
-            cursor: not-allowed;
-        }
-        .service-card {
-            transition: all 0.3s ease;
         }
     </style>
 </head>
-<body class="bg-brand-light font-sans antialiased text-gray-900 min-h-screen flex flex-col">
 
-    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20">
-                <div class="flex items-center">
-                    <img src="{% static 'agendamento/images/logo.png' %}" alt="Logo Clínica Vitalidade" class="h-[50px] w-auto mr-3">
-                    <!-- <span class="text-xl font-bold text-brand hidden sm:block">Clínica Vitalidade</span> -->
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-sm text-gray-500">Olá, <span class="font-semibold text-brand">{{ name }}!</span></div>
-                    <a href="/login" class="text-sm text-brand-accent hover:text-brand font-medium">Sair</a>
-                </div>
+<body class="bg-brand-light min-h-screen flex flex-col font-sans">
+
+<nav class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+        <img src="{% static 'agendamento/images/logo.png' %}" class="h-[50px]">
+        <div class="text-sm text-gray-600">
+            Olá, <span class="font-semibold text-brand">{{ nome }}</span> |
+            <a href="{% url 'login' %}" class="text-brand-accent hover:text-brand">Sair</a>
+        </div>
+    </div>
+</nav>
+
+<main class="flex-grow max-w-7xl mx-auto px-4 py-10 w-full">
+
+    <!-- Seleção do Plano -->
+    <div class="bg-white p-8 rounded-xl shadow-lg mb-10 border border-gray-100">
+        <div class="md:flex md:justify-between md:items-center">
+            <div>
+                <h1 class="text-3xl font-extrabold text-brand">Nossos Serviços</h1>
+                <p class="text-gray-600 mt-2">Selecione seu plano para verificar a cobertura.</p>
+            </div>
+
+            <div class="w-full md:w-1/3 mt-6 md:mt-0">
+                <label class="block mb-2 text-sm font-medium">Qual é o seu Plano?</label>
+                <select id="plano-select" class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg">
+                    <option value="todos">Particular (ver tudo)</option>
+                    {% for plano in planos %}
+                        <option value="{{ plano.nome|lower }}" {% if plano.nome == request.session.plano %}selected{% endif %}>
+                            {{ plano.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
-        
-        <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-100 mb-10">
-            <div class="md:flex md:items-center md:justify-between">
-                <div class="mb-6 md:mb-0">
-                    <h1 class="text-3xl font-extrabold text-brand">Nossos Serviços</h1>
-                    <p class="mt-2 text-gray-600">Selecione seu convênio para verificar a cobertura.</p>
-                </div>
-                
-                <div class="w-full md:w-1/3">
-                    <label for="plano-select" class="block text-sm font-medium text-gray-700 mb-2">Qual é o seu Plano de Saúde?</label>
-                    <div class="relative">
-                        <select id="plano-select" class="appearance-none block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand sm:text-sm transition shadow-sm">
-                            <option value="todos" selected>Ver todos os serviços (Particular)</option>
-                            <option value="unimed">Unimed</option>
-                            <option value="bradesco">Bradesco Saúde</option>
-                            <option value="sulamerica">SulAmérica</option>
-                            <option value="amil">Amil</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Grid Serviços -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="services-grid">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="services-grid">
+        {% for servico in servicos %}
+            <div class="service-card bg-white rounded-xl shadow-md overflow-hidden border hover:shadow-xl transition"
+                 data-plans='[{% for p in servico.planos_aceitos.all %}"{{ p.nome|lower }}"{% if not forloop.last %},{% endif %}{% endfor %}]'>
 
-            <div class="service-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl group relative" data-plans='["unimed", "bradesco", "sulamerica"]'>
                 <div class="h-2 bg-brand"></div>
+
                 <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-brand/10 rounded-full text-brand group-hover:bg-brand group-hover:text-white transition-colors duration-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="p-3 bg-brand/10 rounded-full text-brand">
+                            <span class="font-bold text-lg">S</span>
                         </div>
-                        <span class="text-sm font-semibold text-brand-accent bg-brand-accent/10 px-2 py-1 rounded">R$ 500,00</span>
+
+                        <span class="text-sm font-semibold text-brand-accent bg-brand-accent/10 px-2 py-1 rounded">
+                            R$ {{ servico.preco }}
+                        </span>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Nutrologia</h3>
-                    <p class="text-gray-600 text-sm mb-6 line-clamp-2">Consulta completa com eletrocardiograma incluso e avaliação de risco cirúrgico.</p>
-                    
-                    <div class="unavailable-msg hidden absolute inset-x-0 bottom-20 text-center text-red-500 text-xs font-bold bg-white/90 py-1">
+
+                    <h3 class="text-xl font-bold mb-2">{{ servico.nome }}</h3>
+                    <p class="text-gray-600 text-sm mb-6">{{ servico.descricao|default:"-" }}</p>
+
+                    <div class="unavailable-msg hidden text-center text-red-500 text-xs font-semibold mb-2">
                         Não coberto pelo plano selecionado
                     </div>
 
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 flex justify-center items-center">
+                    <a href="{% url 'escolher_medico' servico.id %}"
+                       class="btn-agendar block text-center py-2 px-4 bg-brand hover:bg-brand-hover text-white rounded-lg font-medium transition">
                         Agendar Agora
-                    </button>
+                    </a>
                 </div>
             </div>
+        {% endfor %}
+    </div>
 
-            <div class="service-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl group relative" data-plans='["amil", "bradesco"]'>
-                <div class="h-2 bg-brand"></div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-brand/10 rounded-full text-brand group-hover:bg-brand group-hover:text-white transition-colors duration-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                        </div>
-                        <span class="text-sm font-semibold text-brand-accent bg-brand-accent/10 px-2 py-1 rounded">R$ 500,00</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Ortopedia</h3>
-                    <p class="text-gray-600 text-sm mb-6 line-clamp-2">Tratamentos para pele, unhas e cabelos com foco em estética e saúde.</p>
-                     <div class="unavailable-msg hidden absolute inset-x-0 bottom-20 text-center text-red-500 text-xs font-bold bg-white/90 py-1">Não coberto</div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150">Agendar Agora</button>
-                </div>
-            </div>
+</main>
 
-            <div class="service-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl group relative" data-plans='["unimed", "sulamerica", "amil"]'>
-                <div class="h-2 bg-brand"></div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-brand/10 rounded-full text-brand group-hover:bg-brand group-hover:text-white transition-colors duration-300">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                        </div>
-                        <span class="text-sm font-semibold text-brand-accent bg-brand-accent/10 px-2 py-1 rounded">R$ 500,00</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Geriatria</h3>
-                    <p class="text-gray-600 text-sm mb-6 line-clamp-2">Reabilitação física focada em lesões musculares e recuperação pós-cirúrgica.</p>
-                     <div class="unavailable-msg hidden absolute inset-x-0 bottom-20 text-center text-red-500 text-xs font-bold bg-white/90 py-1">Não coberto</div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150">Agendar Agora</button>
-                </div>
-            </div>
+<footer class="bg-brand text-white py-6 text-center">
+    © 2025 Clínica Vitalidade — Todos os direitos reservados.
+</footer>
 
-             <div class="service-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl group relative" data-plans='["unimed"]'>
-                <div class="h-2 bg-brand"></div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="p-3 bg-brand/10 rounded-full text-brand group-hover:bg-brand group-hover:text-white transition-colors duration-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
-                        </div>
-                        <span class="text-sm font-semibold text-brand-accent bg-brand-accent/10 px-2 py-1 rounded">R$ 500,00</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Bioimpedância</h3>
-                    <p class="text-gray-600 text-sm mb-6 line-clamp-2">Planejamento alimentar personalizado para alta performance e emagrecimento.</p>
-                     <div class="unavailable-msg hidden absolute inset-x-0 bottom-20 text-center text-red-500 text-xs font-bold bg-white/90 py-1">Não coberto</div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150">Agendar Agora</button>
-                </div>
-            </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const select = document.getElementById("plano-select");
+    const cards = document.querySelectorAll(".service-card");
 
+    function filter() {
+        const plan = select.value;
 
-        <div class="text-center mt-12">
-            <p class="text-sm text-gray-500">Dúvidas sobre cobertura? <a href="#" class="text-brand font-semibold hover:underline">Fale com nosso atendimento</a></p>
-        </div>
-    </main>
+        cards.forEach(card => {
+            const accepted = JSON.parse(card.dataset.plans);
+            const btn = card.querySelector(".btn-agendar");
+            const msg = card.querySelector(".unavailable-msg");
 
-    <footer class="bg-brand text-white py-8 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <p>&copy; 2025 Clínica Vitalidade. Todos os direitos reservados.</p>
-        </div>
-    </footer>
+            card.classList.remove("service-disabled");
+            msg.classList.add("hidden");
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const filterSelect = document.getElementById('plano-select');
-            const cards = document.querySelectorAll('.service-card');
-
-            function filterServices() {
-                const selectedPlan = filterSelect.value;
-
-                cards.forEach(card => {
-                    // Reset states
-                    card.classList.remove('service-disabled');
-                    const btn = card.querySelector('button');
-                    const msg = card.querySelector('.unavailable-msg');
-                    
-                    btn.disabled = false;
-                    btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-                    btn.classList.add('bg-brand', 'hover:bg-brand-hover');
-                    btn.textContent = 'Agendar Agora';
-                    if(msg) msg.classList.add('hidden');
-
-
-                    if (selectedPlan === 'todos') {
-                        return; // Mostra tudo e sai da função
-                    }
-
-                    // Obtém os planos aceitos do atributo data-plans (JSON)
-                    const acceptedPlans = JSON.parse(card.getAttribute('data-plans'));
-
-                    // Se o plano selecionado NÃO estiver na lista
-                    if (!acceptedPlans.includes(selectedPlan)) {
-                        card.classList.add('service-disabled');
-                        
-                        btn.disabled = true;
-                        btn.classList.remove('bg-brand', 'hover:bg-brand-hover');
-                        btn.classList.add('bg-gray-400', 'cursor-not-allowed');
-                        btn.textContent = 'Indisponível';
-                        
-                        if(msg) msg.classList.remove('hidden');
-                    }
-                });
+            // Botão sempre volta a ser link clicável
+            if (btn.tagName !== "A") {
+                const servicoId = btn.dataset.servico;
+                btn.outerHTML = `<a href="/escolher-medico/${ card.dataset.id }" class="btn-agendar block text-center py-2 px-4 bg-brand hover:bg-brand-hover text-white rounded-lg font-medium transition">Agendar Agora</a>`;
             }
 
-            // Event Listener para quando mudar o select
-            filterSelect.addEventListener('change', filterServices);
+            if (plan !== "todos" && !accepted.includes(plan)) {
+                card.classList.add("service-disabled");
+                msg.classList.remove("hidden");
+
+                // Transformar botão em não clicável
+                btn.outerHTML = `<span class="btn-agendar block text-center py-2 px-4 bg-gray-400 text-white rounded-lg font-medium cursor-not-allowed">Indisponível</span>`;
+            }
         });
-    </script>
+    }
+
+    select.addEventListener("change", filter);
+    filter();  // aplica filtro ao carregar
+});
+</script>
+
 </body>
 </html>
