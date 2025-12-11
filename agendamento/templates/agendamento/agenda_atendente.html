@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,8 +46,8 @@
     </nav>
 
     <main class="max-w-7xl mx-auto p-6 lg:p-10">
-        
-        <!-- TITULO -->
+
+        <!-- Título -->
         <div class="flex items-center justify-between mb-10">
             <div>
                 <h2 class="text-3xl font-bold text-brand">Agendamentos</h2>
@@ -67,43 +68,32 @@
 
             <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-6">
 
-                <!-- FILTRO Paciente -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Paciente (nome ou CPF)</label>
-                    <input name="paciente"
-                           type="text"
-                           value="{{ request.GET.paciente }}"
-                           placeholder="Digite nome ou CPF"
-                           class="w-full px-4 py-2 border rounded-lg focus:ring-brand focus:border-brand">
+                    <input name="paciente" type="text" value="{{ request.GET.paciente }}"
+                        placeholder="Digite nome ou CPF"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-brand focus:border-brand">
                 </div>
 
-                <!-- FILTRO Data específica -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Data específica</label>
-                    <input name="data"
-                           type="date"
-                           value="{{ request.GET.data }}"
-                           class="w-full px-4 py-2 border rounded-lg focus:ring-brand focus:border-brand">
+                    <input name="data" type="date" value="{{ request.GET.data }}"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-brand focus:border-brand">
                 </div>
 
-                <!-- FILTRO Mês -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Mês</label>
-                    <input name="mes"
-                           type="month"
-                           value="{{ request.GET.mes }}"
-                           class="w-full px-4 py-2 border rounded-lg focus:ring-brand focus:border-brand">
+                    <input name="mes" type="month" value="{{ request.GET.mes }}"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-brand focus:border-brand">
                 </div>
 
-                <!-- FILTRO Médico -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Médico</label>
-                    <select name="medico"
-                            class="w-full px-4 py-2 border rounded-lg focus:ring-brand focus:border-brand">
+                    <select name="medico" class="w-full px-4 py-2 border rounded-lg focus:ring-brand focus:border-brand">
                         <option value="">Todos</option>
                         {% for medico in medicos %}
                         <option value="{{ medico.id }}"
-                            {% if request.GET.medico == medico.id|stringformat:"s" %}selected{% endif %}>
+                            {% if request.GET.medico|stringformat:"s" == medico.id|stringformat:"s" %}selected{% endif %}>
                             {{ medico.nome }}
                         </option>
                         {% endfor %}
@@ -115,34 +105,37 @@
                         Aplicar Filtros
                     </button>
                 </div>
+
             </form>
         </div>
 
         <!-- LISTA DE AGENDAMENTOS -->
         <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
 
-            {% for ag in agendamentos %}
+            {% for ag in page_obj %}
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
 
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-sm px-3 py-1 rounded-full bg-brand-accent/20 text-brand-accent font-bold">
-                        {{ ag.data|date:"d/m/Y" }}
+                        {{ ag.data_hora|date:"d/m/Y" }}
                     </span>
 
-                    <span class="text-xs text-gray-500">{{ ag.horario }}</span>
+                    <span class="text-xs text-gray-500">{{ ag.data_hora|time:"H:i" }}</span>
                 </div>
 
                 <div class="mb-3">
-                    <p class="text-lg font-bold text-gray-800">{{ ag.paciente.nome }}</p>
-                    <p class="text-sm text-gray-500">CPF: {{ ag.paciente.cpf }}</p>
+                    <p class="text-lg font-bold text-gray-800">{{ ag.usuario.get_full_name }}</p>
+                    <p class="text-sm text-gray-500">CPF: {{ ag.usuario.cpf }}</p>
+                    <p class="text-sm text-gray-500">Serviço: {{ ag.servico.nome }}</p>
                 </div>
 
                 <div class="mt-4 pt-4 border-t border-gray-200 flex items-center">
-                    <img src="https://i.pravatar.cc/150?img=33"
-                         class="w-10 h-10 rounded-full object-cover mr-3 border">
+                    <img src="https://i.pravatar.cc/150?img=33" class="w-10 h-10 rounded-full object-cover mr-3 border">
                     <div>
                         <p class="text-sm font-bold">{{ ag.medico.nome }}</p>
-                        <p class="text-xs text-brand font-medium">{{ ag.medico.especialidade }}</p>
+                        <p class="text-xs text-brand font-medium">
+                            {% for esp in ag.medico.especialidades.all %}{{ esp.nome }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -151,7 +144,34 @@
             {% endfor %}
 
         </div>
+
+        <!-- PAGINAÇÃO -->
+        {% if page_obj.has_other_pages %}
+        <div class="mt-8 flex justify-center space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?{% if request.GET.paciente %}paciente={{ request.GET.paciente }}&{% endif %}
+                  {% if request.GET.data %}data={{ request.GET.data }}&{% endif %}
+                  {% if request.GET.mes %}mes={{ request.GET.mes }}&{% endif %}
+                  {% if request.GET.medico %}medico={{ request.GET.medico }}&{% endif %}
+                  page={{ page_obj.previous_page_number }}"
+               class="px-3 py-1 border rounded hover:bg-brand hover:text-white transition">Anterior</a>
+            {% endif %}
+
+            <span class="px-3 py-1 border rounded bg-gray-100">{{ page_obj.number }} / {{ paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+            <a href="?{% if request.GET.paciente %}paciente={{ request.GET.paciente }}&{% endif %}
+                  {% if request.GET.data %}data={{ request.GET.data }}&{% endif %}
+                  {% if request.GET.mes %}mes={{ request.GET.mes }}&{% endif %}
+                  {% if request.GET.medico %}medico={{ request.GET.medico }}&{% endif %}
+                  page={{ page_obj.next_page_number }}"
+               class="px-3 py-1 border rounded hover:bg-brand hover:text-white transition">Próxima</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
     </main>
 
 </body>
+
 </html>
