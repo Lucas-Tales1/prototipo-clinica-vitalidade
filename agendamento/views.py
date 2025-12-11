@@ -184,11 +184,15 @@ class AgendaAtendenteView(TemplateView):
 
         # Filtro por paciente (nome ou CPF)
         if paciente_q:
-            consultas = consultas.filter(
-                Q(usuario__first_name__icontains=paciente_q) |
-                Q(usuario__last_name__icontains=paciente_q) |
-                Q(usuario__cpf__icontains=paciente_q)
-            )
+            termos = paciente_q.split()
+
+            for termo in termos:
+                consultas = consultas.filter(
+                    Q(usuario__first_name__icontains=termo) |
+                    Q(usuario__last_name__icontains=termo) |
+                    Q(usuario__username__icontains=termo) |
+                    Q(usuario__cpf__icontains=termo)
+                )
 
         # Filtro por data específica
         if data:
