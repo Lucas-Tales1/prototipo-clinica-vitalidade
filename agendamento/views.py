@@ -3,13 +3,15 @@ from django.views import View
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.contrib import messages
-from .models import User, Consulta, Medico, Servico, Plano
+from .models import User, Consulta, Medico, Servico, Plano, Especialidade
 from .forms import RegisterForm, ConsultaCreateForm
 from django.contrib.auth import authenticate, login
 from django.views.generic import TemplateView
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.http import HttpResponseBadRequest
+import time
+
 
 
 class RegisterView(CreateView):
@@ -99,8 +101,8 @@ class DashboardView(TemplateView):
         now = timezone.now()
         return (Consulta.objects
                 .select_related("medico", "servico", "usuario")
-                .filter(usuario=self.request.user, data_hora__gte=now)
-                .order_by("data_hora"))
+                .filter(usuario=self.request.user)
+                .order_by("-data_hora"))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -111,21 +113,25 @@ class DashboardView(TemplateView):
 
 class CriarConsultaView(View):
     def post(self, request):
+        # print("Dados recebidos para agendamento:", request.POST)
         if not request.user.is_authenticated:
-            messages.error(request, "Você precisa estar logado para agendar.")
+            # messages.error(request, "Você precisa estar logado para agendar.")
             return redirect("login")
 
+        # usuario_id = request.POST.get("usuario_id")
         medico_id = request.POST.get("medico_id")
-        servico_id = request.POST.get("servico_id")
+        servico_id = request.POST.get("especialidade_id")
         data_hora_str = request.POST.get("data_hora")
 
         if not (medico_id and servico_id and data_hora_str):
             return HttpResponseBadRequest("Dados insuficientes para agendamento.")
 
-        # Plano do paciente (pode ser None)
+        # # Plano do paciente (pode ser None)
         plano_id = getattr(request.user, "plano_saude_id", None)
 
-        # Monta payload para o ModelForm
+        print(f"Agendamento - Usuário: {request.user.id}, Médico: {medico_id}, Serviço: {servico_id},Plano: {plano_id}, Data/Hora: {data_hora_str}")
+
+        # # Monta payload para o ModelForm
         form_data = {
             "usuario": request.user.id,
             "medico": medico_id,
@@ -133,27 +139,30 @@ class CriarConsultaView(View):
             "plano": plano_id,
             "data_hora": data_hora_str,  # formato esperado: YYYY-MM-DDTHH:MM
         }
-        form = ConsultaCreateForm(data=form_data, user=request.user)
 
-        # Valida médico e serviço existem e plano é aceito
+        form = ConsultaCreateForm(data=form_data, user=request.user)
+        print("Form data para agendamento:", form)
+
+        # # Valida médico e serviço existem e plano é aceito
         try:
             medico = Medico.objects.get(id=medico_id)
-            servico = Servico.objects.get(id=servico_id)
-        except (Medico.DoesNotExist, Servico.DoesNotExist):
+            servico = Especialidade.objects.get(id=servico_id)
+        except (Medico.DoesNotExist, Especialidade.DoesNotExist):
             return HttpResponseBadRequest("Médico ou serviço inválido.")
 
         if plano_id:
             if not medico.planos_aceitos.filter(id=plano_id).exists():
-                messages.error(request, "Este médico não aceita o seu plano de saúde.")
+                # messages.error(request, "Este médico não aceita o seu plano de saúde.")
                 return redirect("escolha_servicos")
 
         if form.is_valid():
             consulta = form.save()
-            messages.success(request, "Consulta criada com sucesso!")
+            # messages.success(request, "Consulta criada com sucesso!")
+            # time.sleep(1) 
             return redirect("dashboard")
 
-        # Erros de form
-        messages.error(request, "Corrija os dados do agendamento.")
+        # # Erros de form
+        # messages.error(request, "Corrija os dados do agendamento.")
         return redirect("escolha_servicos")
 
     def get(self, request):

@@ -1,7 +1,7 @@
 # agendamento/forms.py
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, Consulta, Medico, Servico, Plano
+from .models import User, Consulta, Medico, Servico, Plano, Especialidade
 
 class RegisterForm(UserCreationForm):
     class Meta:
@@ -66,5 +66,5 @@ class ConsultaCreateForm(forms.ModelForm):
                 self.fields["plano"].initial = user.plano_saude_id
         # Optional: order dropdowns for better UX
         self.fields["medico"].queryset = Medico.objects.order_by("nome")
-        self.fields["servico"].queryset = Servico.objects.order_by("nome")
+        self.fields["servico"].queryset = Especialidade.objects.order_by("nome")
         self.fields["plano"].queryset = Plano.objects.order_by("nome")

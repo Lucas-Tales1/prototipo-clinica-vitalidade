@@ -57,7 +57,7 @@ class Paciente(models.Model):
 class Consulta(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     medico = models.ForeignKey(Medico, on_delete=models.CASCADE)
-    servico = models.ForeignKey(Servico, on_delete=models.CASCADE)
+    servico = models.ForeignKey(Especialidade, on_delete=models.CASCADE)
     plano = models.ForeignKey(Plano, on_delete=models.SET_NULL, blank=True, null=True)
     data_hora = models.DateTimeField()
     criado_em = models.DateTimeField(auto_now_add=True)
