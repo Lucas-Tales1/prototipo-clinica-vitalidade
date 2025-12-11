@@ -28,37 +28,41 @@
         }
     </script>
     <style>
-        /* CSS Class for Disabled State (Plan Mismatch) */
-        .doctor-disabled {
-            opacity: 0.6;
-            filter: grayscale(100%);
+        .doctor-disabled { opacity: 0.6; filter: grayscale(100%); pointer-events: none; }
+        .hidden-by-filter { display: none; }
+        
+        /* --- MODAL WIZARD ANIMATION (SWEEP EFFECT) --- */
+        .modal-wizard-track {
+            display: flex;
+            width: 200%; /* Track is 2x as wide as the modal */
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* Smooth sweep */
         }
-        .doctor-disabled button {
-            pointer-events: none;
+        .modal-step {
+            width: 50%; /* Each step takes up 100% of the visible view */
+            flex-shrink: 0;
         }
-        /* Hide elements filtered out by specialty */
-        .hidden-by-filter {
-            display: none;
-        }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-brand-light font-sans antialiased text-gray-900 min-h-screen flex flex-col">
+<body class="bg-brand-light font-sans antialiased text-gray-900 min-h-screen flex flex-col relative">
 
-    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20">
                 <div class="flex items-center">
-                    <img src="{% static 'agendamento/images/logo.png' %}" alt="Logo Clínica Vitalidade" class="h-[60px] w-auto mr-3">
+                    <img src="{% static 'agendamento/images/logo.png' %}" alt="Logo" class="h-[50px] w-auto mr-3">
                 </div>
-                <div class="flex items-center space-x-4 ">
-                    <div class="text-sm text-gray-500">Olá, <span class="font-semibold text-brand">{{ name }}!</span></div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-500">Olá, <span class="font-semibold text-brand">{{ user.username|default:"Visitante" }}!</span></div>
                     <a href="/login" class="text-sm text-brand-accent hover:text-brand font-medium">Sair</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full z-0">
         
         <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-100 mb-10">
             <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
@@ -68,7 +72,6 @@
                 </div>
                 
                 <div class="flex flex-col md:flex-row gap-4 w-full lg:w-2/3">
-                    
                     <div class="w-full">
                         <label for="specialty-select" class="block text-sm font-medium text-gray-700 mb-2">Especialidade</label>
                         <div class="relative">
@@ -100,309 +103,43 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="doctors-grid">
-
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["unimed", "bradesco", "sulamerica"]' 
-                 data-specialty="nutrologia">
+            {% for medico in medicos %}
+            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col"
+                 data-plans='[{% for p in medico.planos_aceitos.all %}{% if not forloop.first %}, {% endif %}"{{ p.nome|slugify }}"{% endfor %}]'
+                 data-specialty="{{ medico.especialidades.first.nome|slugify }}"
+                 data-medico-id="{{ medico.id }}">
                 
                 <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://i.pravatar.cc/300?img=12" alt="Dr. Elson Augusto" referrerpolicy="no-referrer" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    
-                    <h3 class="text-xl font-bold text-gray-900">Dr. Elson Augusto</h3>
-                    <p class="text-brand font-medium mb-2">Nutrologia</p>
-                    
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(5.0)</span>
-                    </div>
+                    {% if medico.foto_perfil_medico %}
+                         <img src="{{ medico.foto_perfil_medico.url }}" class="w-24 h-24 rounded-full border-4 border-gray-100 mb-4 object-cover">
+                    {% else %}
+                         <img src="https://i.pravatar.cc/150?u={{ medico.id }}" class="w-24 h-24 rounded-full border-4 border-gray-100 mb-4 object-cover">
+                    {% endif %}
+                   
+                    <h3 class="text-xl font-bold text-gray-900">{{ medico.nome }}</h3>
+                    <p class="text-brand font-medium mb-2">{{ medico.especialidades.first.nome }}</p>
                 </div>
 
                 <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">
-                        Especialista indisponível para esse plano
-                    </div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">
+                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">Indisponível</div>
+                    <button onclick="openBookingModal('{{ medico.nome }}', '{{ medico.id }}')" 
+                            data-medico-id="{{ medico.id }}"
+                            data-especialidade="{{ medico.especialidades.first.nome|slugify }}"
+                            class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition shadow-sm">
                         Agendar Consulta
                     </button>
                 </div>
             </div>
-
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["amil", "bradesco"]' 
-                 data-specialty="ortopedia">
-                
-                <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://i.pravatar.cc/300?img=15" alt="Dr. Afonso" referrerpolicy="no-referrer" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    <h3 class="text-xl font-bold text-gray-900">Dr. Afonso</h3>
-                    <p class="text-brand font-medium mb-2">Ortopedia</p>
-                    
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(4.8)</span>
-                    </div>
-                </div>
-
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">
-                        Especialista indisponível para esse plano
-                    </div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">
-                        Agendar Consulta
-                    </button>
-                </div>
+            {% empty %}
+            <div class="col-span-3 text-center py-10 text-gray-500">
+                Nenhum médico encontrado.
             </div>
-
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["unimed", "sulamerica", "amil"]' 
-                 data-specialty="geriatria">
-                
-                <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=300&h=300&fit=crop&crop=faces" alt="Dra. Carol" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    
-                    <h3 class="text-xl font-bold text-gray-900">Dra. Carol</h3>
-                    <p class="text-brand font-medium mb-2">Geriatria</p>
-                    
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(4.9)</span>
-                    </div>
-                </div>
-
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">
-                        Especialista indisponível para esse plano
-                    </div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">
-                        Agendar Consulta
-                    </button>
-                </div>
-            </div>
-            
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["unimed"]' 
-                 data-specialty="bioimpedancia">
-                
-                <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=300&h=300&fit=crop&crop=faces" alt="Dr. Guilherme" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    
-                    <h3 class="text-xl font-bold text-gray-900">Dr. Guilherme</h3>
-                    <p class="text-brand font-medium mb-2">Nutricionista Esportivo</p>
-                    
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(4.5)</span>
-                    </div>
-                </div>
-
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">
-                        Especialista indisponível para esse plano
-                    </div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">
-                        Agendar Consulta
-                    </button>
-                </div>
-            </div>
-
-            <!-- Novos cards de médicos -->
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["unimed", "bradesco", "amil"]' 
-                 data-specialty="ortopedia">
-                <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=300&h=300&fit=crop&crop=faces" alt="Dr. Marcelo Pereira" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    <h3 class="text-xl font-bold text-gray-900">Dr. Marcelo Pereira</h3>
-                    <p class="text-brand font-medium mb-2">Ortopedia</p>
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(4.7)</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">Especialista indisponível para esse plano</div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">Agendar Consulta</button>
-                </div>
-            </div>
-
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["sulamerica", "unimed"]' 
-                 data-specialty="geriatria">
-                <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=300&h=300&fit=crop&crop=faces" alt="Dra. Helena Costa" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    <h3 class="text-xl font-bold text-gray-900">Dra. Helena Costa</h3>
-                    <p class="text-brand font-medium mb-2">Geriatria</p>
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(5.0)</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">Especialista indisponível para esse plano</div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">Agendar Consulta</button>
-                </div>
-            </div>
-
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["amil", "bradesco", "sulamerica"]' 
-                 data-specialty="nutrologia">
-                <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://images.unsplash.com/photo-1550831107-1553da8c8464?q=80&w=300&h=300&fit=crop&crop=faces" alt="Dra. Bianca Torres" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    <h3 class="text-xl font-bold text-gray-900">Dra. Bianca Torres</h3>
-                    <p class="text-brand font-medium mb-2">Nutrologia</p>
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(3.8)</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">Especialista indisponível para esse plano</div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">Agendar Consulta</button>
-                </div>
-            </div>
-
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["unimed", "amil"]' 
-                 data-specialty="bioimpedancia">
-                <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=300&h=300&fit=crop&crop=faces" alt="Dr. Rafael Lima" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    <h3 class="text-xl font-bold text-gray-900">Dr. Rafael Lima</h3>
-                    <p class="text-brand font-medium mb-2">Bioimpedância</p>
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(3.9)</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">Especialista indisponível para esse plano</div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">Agendar Consulta</button>
-                </div>
-            </div>
-
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["bradesco"]' 
-                 data-specialty="ortopedia">
-                <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=300&h=300&fit=crop&crop=faces" alt="Dr. Pedro Albuquerque" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    <h3 class="text-xl font-bold text-gray-900">Dr. Pedro Albuquerque</h3>
-                    <p class="text-brand font-medium mb-2">Ortopedia</p>
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(3.6)</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">Especialista indisponível para esse plano</div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">Agendar Consulta</button>
-                </div>
-            </div>
-
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["unimed", "sulamerica"]' 
-                 data-specialty="geriatria">
-                <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=300&h=300&fit=crop&crop=faces" alt="Dr. João Figueiredo" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    <h3 class="text-xl font-bold text-gray-900">Dr. João Figueiredo</h3>
-                    <p class="text-brand font-medium mb-2">Geriatria</p>
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(4.2)</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">Especialista indisponível para esse plano</div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">Agendar Consulta</button>
-                </div>
-            </div>
-
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["amil"]' 
-                 data-specialty="nutrologia">
-                <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?q=80&w=300&h=300&fit=crop&crop=faces" alt="Dra. Marina Souza" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    <h3 class="text-xl font-bold text-gray-900">Dra. Marina Souza</h3>
-                    <p class="text-brand font-medium mb-2">Nutrologia</p>
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(4.1)</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">Especialista indisponível para esse plano</div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">Agendar Consulta</button>
-                </div>
-            </div>
-
-            <div class="doctor-card bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col" 
-                 data-plans='["unimed", "bradesco", "sulamerica", "amil"]' 
-                 data-specialty="bioimpedancia">
-                <div class="p-6 flex flex-col items-center text-center flex-grow">
-                    <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=300&h=300&fit=crop&crop=faces" alt="Dra. Paula Mendes" class="w-24 h-24 rounded-full object-cover border-4 border-gray-100 mb-4 shadow-sm">
-                    <h3 class="text-xl font-bold text-gray-900">Dra. Paula Mendes</h3>
-                    <p class="text-brand font-medium mb-2">Bioimpedância</p>
-                    <div class="flex items-center mb-4 text-yellow-400">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                        <span class="ml-2 text-gray-400 text-sm">(5.0)</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-gray-50 border-t border-gray-100">
-                    <div class="unavailable-msg hidden mb-2 text-center text-red-500 text-xs font-bold">Especialista indisponível para esse plano</div>
-                    <button class="w-full py-2 px-4 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover transition duration-150 shadow-sm">Agendar Consulta</button>
-                </div>
-            </div>
-
+            {% endfor %}
         </div>
 
         <div id="no-results" class="hidden w-full text-center py-10">
@@ -413,19 +150,121 @@
             <p class="text-gray-500">Tente alterar os filtros de busca.</p>
         </div>
 
-        <div class="text-center mt-12">
-            <p class="text-sm text-gray-500">Dúvidas? <a href="#" class="text-brand font-semibold hover:underline">Fale com nosso atendimento</a></p>
-        </div>
     </main>
 
-    <footer class="bg-brand text-white py-8 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <p>&copy; 2025 Clínica Vitalidade. Todos os direitos reservados.</p>
+    <div id="booking-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeBookingModal()"></div>
+
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            
+            <div class="inline-block bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:max-w-lg w-full relative">
+                
+                <div class="bg-brand px-6 py-4 flex justify-between items-center shadow-md z-10 relative">
+                    <div>
+                        <h3 class="text-lg font-bold text-white leading-tight">Agendar Consulta</h3>
+                        <p class="text-brand-accent text-xs mt-0.5" id="modal-doctor-name">Dr. Nome Sobrenome</p>
+                    </div>
+                    <button type="button" onclick="closeBookingModal()" class="text-white/70 hover:text-white transition focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <form id="booking-form" method="POST" action="{% url 'criar_consulta' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="medico_id" id="input-medico-id">
+                    <input type="hidden" name="servico_id" id="input-servico-id">
+                    <input type="hidden" name="data_hora" id="input-data-hora"> 
+
+                    <div class="overflow-hidden bg-white relative h-[450px]"> 
+                        
+                        <div id="wizard-track" class="modal-wizard-track translate-x-0">
+                            
+                            <div class="modal-step px-6 py-4 flex flex-col h-full">
+                                <div class="flex justify-between items-center mb-4">
+                                    <button type="button" id="prev-month" class="p-2 hover:bg-gray-100 rounded-full text-brand transition">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                                    </button>
+                                    <h2 id="current-month-display" class="font-bold text-gray-800 text-lg capitalize">Outubro 2025</h2>
+                                    <button type="button" id="next-month" class="p-2 hover:bg-gray-100 rounded-full text-brand transition">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </button>
+                                </div>
+
+                                <div class="grid grid-cols-7 gap-1 mb-2 text-center">
+                                    <div class="text-xs font-bold text-gray-400">Dom</div>
+                                    <div class="text-xs font-bold text-gray-400">Seg</div>
+                                    <div class="text-xs font-bold text-gray-400">Ter</div>
+                                    <div class="text-xs font-bold text-gray-400">Qua</div>
+                                    <div class="text-xs font-bold text-gray-400">Qui</div>
+                                    <div class="text-xs font-bold text-gray-400">Sex</div>
+                                    <div class="text-xs font-bold text-gray-400">Sáb</div>
+                                </div>
+                                
+                                <div id="calendar-days" class="grid grid-cols-7 gap-1 text-center flex-grow">
+                                    </div>
+
+                                <div class="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+                                    <button type="button" id="btn-next-step" disabled onclick="goToTimeStep()"
+                                            class="px-6 py-2 bg-brand text-white rounded-lg font-medium shadow-md hover:bg-brand-hover transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                                        Ver Horários <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="modal-step px-6 py-4 flex flex-col h-full bg-gray-50">
+                                
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="font-bold text-gray-800 text-lg">Horários Disponíveis</h2>
+                                    <span id="display-selected-date-header" class="text-sm font-medium text-brand bg-brand-light px-3 py-1 rounded-full">--/--</span>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="servico-select" class="block text-sm font-medium text-gray-700 mb-2">Serviço</label>
+                                    <select id="servico-select" class="appearance-none block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand sm:text-sm transition shadow-sm">
+                                        <option value="" selected disabled>Selecione um serviço</option>
+                                        {% for s in servicos %}
+                                            <option value="{{ s.id }}">{{ s.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <p id="servico-hint" class="text-xs text-gray-500 mt-1">Selecione o serviço para esta consulta.</p>
+                                </div>
+                                
+                                <p class="text-sm text-gray-500 mb-4">Selecione um horário para confirmar:</p>
+
+                                <div id="time-slots-container" class="grid grid-cols-3 gap-3 overflow-y-auto hide-scrollbar flex-grow content-start">
+                                    </div>
+
+                                <div class="mt-4 pt-4 border-t border-gray-200 flex justify-between">
+                                    <button type="button" onclick="backToDateStep()" 
+                                            class="text-gray-500 hover:text-brand font-medium text-sm flex items-center px-2">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                                        Trocar Data
+                                    </button>
+
+                                    <form method="POST" action="{% url 'criar_consulta' %}">
+                                        {% csrf_token %}
+                                      
+                                    </form>
+
+                                    <button type="submit" id="btn-final-confirm" disabled
+                                            class="px-6 py-2 bg-green-600 text-white rounded-lg font-medium shadow-md hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Confirmar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
-    </footer>
+    </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- 1. FILTERING LOGIC (RESTORED) ---
         const planSelect = document.getElementById('plano-select');
         const specialtySelect = document.getElementById('specialty-select');
         const cards = document.querySelectorAll('.doctor-card');
@@ -438,33 +277,26 @@
 
             cards.forEach(card => {
                 const cardSpecialty = card.getAttribute('data-specialty');
-                // Use a safe parse in case data attribute is malformed
                 let acceptedPlans = [];
-                try {
-                    acceptedPlans = JSON.parse(card.getAttribute('data-plans'));
-                } catch (e) {
-                    console.error("Invalid JSON in data-plans", card);
-                }
+                try { 
+                    acceptedPlans = JSON.parse(card.getAttribute('data-plans')); 
+                } catch (e) { console.error("Error parsing JSON", e); }
 
-                // --- LOGIC 1: VISIBILITY (The "Disappear" Logic) ---
-                // If a specialty is chosen AND it doesn't match the card's specialty...
+                // VISIBILITY (Show/Hide based on Specialty)
                 if (selectedSpecialty !== 'todos' && cardSpecialty !== selectedSpecialty) {
-                    // ...we add the 'hidden' class immediately.
                     card.classList.add('hidden'); 
-                    return; // Skip the rest of the logic for this card
+                    return; 
                 } else {
-                    // Otherwise, ensure it is visible
                     card.classList.remove('hidden');
-                    visibleCount++; // Count this as a visible card
+                    visibleCount++;
                 }
 
-                // --- LOGIC 2: AVAILABILITY (The "Gray Out" Logic) ---
+                // AVAILABILITY (Gray out based on Plan)
                 const btn = card.querySelector('button');
                 const msg = card.querySelector('.unavailable-msg');
                 const isPlanCompatible = selectedPlan === 'todos' || acceptedPlans.includes(selectedPlan);
 
                 if (isPlanCompatible) {
-                    // Enable (Active State)
                     card.classList.remove('doctor-disabled');
                     if(btn) {
                         btn.disabled = false;
@@ -474,7 +306,6 @@
                     }
                     if(msg) msg.classList.add('hidden');
                 } else {
-                    // Disable (Gray State, but still visible on screen)
                     card.classList.add('doctor-disabled');
                     if(btn) {
                         btn.disabled = true;
@@ -486,7 +317,6 @@
                 }
             });
 
-            // Toggle the "No Results" message based on visibleCount
             if (visibleCount === 0) {
                 noResultsMsg.classList.remove('hidden');
             } else {
@@ -494,13 +324,224 @@
             }
         }
 
-        // Attach Event Listeners
+        // Attach listeners
         planSelect.addEventListener('change', filterDoctors);
         specialtySelect.addEventListener('change', filterDoctors);
         
-        // Run once on load to ensure state is correct
+        // Initial run
         filterDoctors();
+    });
+
+    // --- 2. MODAL & WIZARD LOGIC (DATE -> TIME SWEEP) ---
+    const state = {
+        currentDate: new Date(),
+        selectedDay: null,    
+        selectedMonth: null,  
+        selectedYear: null,   
+        selectedTime: null,   
+        doctorId: null
+    };
+
+    const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    const busyDaysMock = [5, 12, 18, 20, 25]; 
+
+    // MODAL CONTROL
+    window.openBookingModal = function(doctorName, doctorId) {
+        // Reset state
+        state.doctorId = doctorId;
+        state.selectedDay = null;
+        state.selectedTime = null;
+        state.currentDate = new Date();
+        // Fill modal header
+        document.getElementById('modal-doctor-name').innerText = doctorName;
+        // Fill hidden medico_id
+        document.getElementById('input-medico-id').value = doctorId;
+        // Try to get a servico_id from the clicked card, if present via data attribute
+        const cardBtn = Array.from(document.querySelectorAll('.doctor-card button')).find(b => b.getAttribute('onclick') === `openBookingModal('${doctorName}', '${doctorId}')`);
+        if (cardBtn) {
+            const servicoIdAttr = cardBtn.getAttribute('data-servico-id');
+            document.getElementById('input-servico-id').value = servicoIdAttr || '';
+        }
+        // Reset wizard UI
+        document.getElementById('btn-next-step').disabled = true;
+        document.getElementById('btn-final-confirm').disabled = true;
+        document.getElementById('wizard-track').style.transform = 'translateX(0%)';
+        // Show modal and render calendar
+        document.getElementById('booking-modal').classList.remove('hidden');
+        renderCalendar();
+    }
+
+    window.closeBookingModal = function() {
+        document.getElementById('booking-modal').classList.add('hidden');
+    }
+
+    // WIZARD NAVIGATION (SWEEP)
+    window.goToTimeStep = function() {
+        if (!state.selectedDay) return;
+
+        // Header for step 2
+        const dateStr = `${state.selectedDay}/${state.selectedMonth + 1}/${state.selectedYear}`;
+        document.getElementById('display-selected-date-header').innerText = dateStr;
+
+        renderTimeSlots();
+
+        // SWEEP LEFT (Show Step 2)
+        document.getElementById('wizard-track').style.transform = 'translateX(-50%)';
+    }
+
+    window.backToDateStep = function() {
+        // SWEEP RIGHT (Back to Step 1)
+        document.getElementById('wizard-track').style.transform = 'translateX(0%)';
+        
+        // Reset time selection
+        state.selectedTime = null;
+        document.getElementById('btn-final-confirm').disabled = true;
+        document.querySelectorAll('.time-slot-btn').forEach(b => {
+            b.classList.remove('bg-brand', 'text-white', 'ring-2', 'ring-brand-accent');
+            b.classList.add('bg-white', 'text-gray-700');
         });
+    }
+
+    // CALENDAR LOGIC
+    function renderCalendar() {
+        const month = state.currentDate.getMonth();
+        const year = state.currentDate.getFullYear();
+        
+        const daysContainer = document.getElementById('calendar-days');
+        document.getElementById('current-month-display').innerText = `${monthNames[month]} ${year}`;
+        daysContainer.innerHTML = "";
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDay; i++) {
+            daysContainer.appendChild(document.createElement('div'));
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayCell = document.createElement('div');
+            dayCell.innerText = day;
+            dayCell.className = 'h-10 w-10 flex items-center justify-center rounded-full mx-auto text-sm transition-all duration-200 border border-transparent';
+
+            const isSelected = (day === state.selectedDay && month === state.selectedMonth && year === state.selectedYear);
+
+            if (busyDaysMock.includes(day)) {
+                dayCell.classList.add('text-red-400', 'bg-red-50', 'cursor-not-allowed');
+                dayCell.title = "Dia Lotado";
+            } else {
+                dayCell.classList.add('cursor-pointer');
+                if (isSelected) {
+                    dayCell.classList.add('bg-brand', 'text-white', 'font-bold', 'shadow-md', 'scale-110');
+                } else {
+                    dayCell.classList.add('text-gray-700', 'hover:bg-brand-light', 'hover:text-brand');
+                }
+                
+                dayCell.onclick = () => selectDate(day, month, year);
+            }
+            daysContainer.appendChild(dayCell);
+        }
+    }
+
+    function selectDate(day, month, year) {
+        state.selectedDay = day;
+        state.selectedMonth = month;
+        state.selectedYear = year;
+        document.getElementById('btn-next-step').disabled = false;
+        renderCalendar(); 
+    }
+
+    // TIME SLOT LOGIC
+    function renderTimeSlots() {
+        const container = document.getElementById('time-slots-container');
+        container.innerHTML = "";
+
+        const times = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"];
+
+        times.forEach(time => {
+            const btn = document.createElement('button');
+            btn.type = "button";
+            btn.className = "time-slot-btn w-full py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 bg-white hover:border-brand hover:text-brand transition focus:outline-none";
+            btn.innerText = time;
+            
+            btn.onclick = function() {
+                document.querySelectorAll('.time-slot-btn').forEach(b => {
+                    b.classList.remove('bg-brand', 'text-white', 'ring-2', 'ring-brand-accent', 'border-transparent');
+                    b.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
+                });
+                
+                this.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
+                this.classList.add('bg-brand', 'text-white', 'ring-2', 'ring-brand-accent', 'border-transparent');
+
+                confirmTimeSelection(time);
+            };
+
+            container.appendChild(btn);
+        });
+    }
+
+    function confirmTimeSelection(time) {
+        state.selectedTime = time;
+        const monthFixed = state.selectedMonth + 1;
+        const fmtMonth = monthFixed < 10 ? `0${monthFixed}` : monthFixed;
+        const fmtDay = state.selectedDay < 10 ? `0${state.selectedDay}` : state.selectedDay;
+        const finalString = `${state.selectedYear}-${fmtMonth}-${fmtDay}T${time}`;
+        document.getElementById('input-data-hora').value = finalString;
+        // Require a selected service
+        const servicoSelectEl = document.getElementById('servico-select');
+        const servicoHidden = document.getElementById('input-servico-id');
+        if (servicoSelectEl && servicoSelectEl.value) {
+            servicoHidden.value = servicoSelectEl.value;
+        }
+        const btnFinal = document.getElementById('btn-final-confirm');
+        btnFinal.disabled = !(servicoHidden.value && finalString);
+        btnFinal.innerHTML = `Confirmar às ${time}`;
+        const hint = document.getElementById('servico-hint');
+        if (hint) {
+            hint.textContent = servicoHidden.value ? 'Serviço selecionado.' : 'Selecione o serviço para confirmar.';
+            hint.className = servicoHidden.value ? 'text-xs text-green-600 mt-1' : 'text-xs text-red-600 mt-1';
+        }
+    }
+
+    document.getElementById('prev-month').addEventListener('click', () => {
+        state.currentDate.setMonth(state.currentDate.getMonth() - 1);
+        renderCalendar();
+    });
+    document.getElementById('next-month').addEventListener('click', () => {
+        state.currentDate.setMonth(state.currentDate.getMonth() + 1);
+        renderCalendar();
+    });
+
+    // Keep hidden servico_id in sync with select and toggle confirm availability
+    const servicoSelect = document.getElementById('servico-select');
+    if (servicoSelect) {
+        servicoSelect.addEventListener('change', function() {
+            document.getElementById('input-servico-id').value = this.value;
+            const hasTime = !!document.getElementById('input-data-hora').value;
+            const btnFinal = document.getElementById('btn-final-confirm');
+            btnFinal.disabled = !(hasTime && this.value);
+            const hint = document.getElementById('servico-hint');
+            if (hint) {
+                hint.textContent = this.value ? 'Serviço selecionado.' : 'Selecione o serviço para esta consulta.';
+                hint.className = this.value ? 'text-xs text-green-600 mt-1' : 'text-xs text-gray-500 mt-1';
+            }
+        });
+    }
+
+    // Submit outer booking form on confirm button click
+    const finalBtn = document.getElementById('btn-final-confirm');
+    if (finalBtn) {
+        finalBtn.addEventListener('click', function(e) {
+            const medicoId = document.getElementById('input-medico-id').value;
+            const servicoId = document.getElementById('input-servico-id').value;
+            const dataHora = document.getElementById('input-data-hora').value;
+            if (!medicoId || !servicoId || !dataHora) {
+                e.preventDefault();
+                alert('Selecione a data, horário e serviço.');
+                return;
+            }
+            document.getElementById('booking-form').submit();
+        });
+    }
     </script>
 </body>
 </html>

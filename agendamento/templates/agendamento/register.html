@@ -1,0 +1,145 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Clínica Vitalidade</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            DEFAULT: '#004d5b',
+                            hover: '#003a45',
+                            accent: '#a8835d',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .input {
+            @apply appearance-none block w-full px-4 py-3.5 border border-gray-300 rounded-lg placeholder-gray-400 text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent;
+        }
+
+        .input::placeholder {
+            opacity: 0.9;
+            /* mais visível */
+        }
+    </style>
+</head>
+
+<body class="font-sans antialiased text-gray-900 bg-white min-h-screen flex">
+
+    <!-- Lado esquerdo (imagem + descrição) -->
+    <div class="hidden md:flex flex-col w-1/2 h-screen overflow-hidden">
+
+        <div class="flex-1 bg-cover bg-center"
+            style="background-image: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');">
+            <div class="w-full h-full bg-black bg-opacity-10"></div>
+        </div>
+
+        <div class="h-[35%] bg-brand flex flex-col justify-center px-10 text-white">
+            <h2 class="text-3xl font-bold mb-2">Crie sua conta</h2>
+            <p class="text-brand-accent text-opacity-90 leading-relaxed text-sm max-w-sm">
+                Acesse funcionalidades, gerencie consultas e acompanhe informações com facilidade.
+            </p>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="w-full md:w-1/2 h-screen flex items-center justify-center px-8">
+
+        <div class="w-full max-w-md space-y-6">
+
+            <div class="flex justify-center mb-4">
+                <img src="{% static 'agendamento/images/logo.png' %}" alt="Logo Clínica Vitalidade" class="h-20 w-auto">
+            </div>
+
+            <div>
+                <h3 class="text-2xl font-bold text-center text-gray-900">Criar Conta</h3>
+                <p class="mt-1 text-sm text-center text-gray-500">Preencha os dados para continuar</p>
+            </div>
+
+            <form method="POST" action="{% url 'register' %}" class="space-y-4">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="p-3 bg-red-50 text-red-700 rounded text-sm">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Nome de usuário</label>
+                    {{ form.username }}
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Email</label>
+                    {{ form.email }}
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">CPF</label>
+                    {{ form.cpf }}
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Data de nascimento</label>
+                    {{ form.data_nascimento }}
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Telefone</label>
+                    {{ form.telefone }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                    {{ form.password1 }}
+                    {% for error in form.password1.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar senha</label>
+                    {{ form.password2 }}
+                    {% for error in form.password2.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <button type="submit"
+                    class="w-full py-3 rounded-lg text-white text-sm font-semibold bg-brand hover:bg-brand-hover transition">
+                    Criar Conta
+                </button>
+            </form>
+
+            <p class="text-center text-sm text-gray-600">
+                Já possui conta?
+                <a href="{% url 'login' %}" class="font-medium text-brand hover:text-brand-hover">
+                    Fazer login
+                </a>
+            </p>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
