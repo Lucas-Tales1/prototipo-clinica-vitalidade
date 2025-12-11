@@ -14,6 +14,7 @@ from django.http import HttpResponseBadRequest
 from django.db.models import Q
 
 
+
 class RegisterView(CreateView):
     model = User
     template_name = "agendamento/register.html"

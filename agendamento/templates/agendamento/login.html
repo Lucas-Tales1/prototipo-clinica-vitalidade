@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -65,44 +66,39 @@
                 {% csrf_token %}
 
                 {% if messages %}
-                    {% for message in messages %}
-                        <div class="p-3 rounded text-sm 
+                {% for message in messages %}
+                <div class="p-3 rounded text-sm 
                             {% if message.tags == 'error' %}
                                 bg-red-50 text-red-700
                             {% else %}
                                 bg-green-50 text-green-700
                             {% endif %}
                         ">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+                    {{ message }}
+                </div>
+                {% endfor %}
                 {% endif %}
 
                 <!-- Email -->
                 <div>
                     <label class="block text-sm font-medium mb-1">Email</label>
-                    <input name="login" type="email" required
-                        class="block w-full px-4 py-3 border border-gray-300 rounded-lg 
+                    <input name="login" type="email" required class="block w-full px-4 py-3 border border-gray-300 rounded-lg 
                                bg-gray-100 placeholder-gray-400
                                focus:outline-none focus:ring-2 focus:ring-brand 
-                               text-sm"
-                        placeholder="exemplo@clinicavitalidade.com.br">
+                               text-sm" placeholder="exemplo@clinicavitalidade.com.br">
                 </div>
 
                 <!-- Senha -->
                 <div>
                     <label class="block text-sm font-medium mb-1">Senha</label>
-                    <input name="password" type="password" required
-                        class="block w-full px-4 py-3 border border-gray-300 rounded-lg 
+                    <input name="password" type="password" required class="block w-full px-4 py-3 border border-gray-300 rounded-lg 
                                bg-gray-100 placeholder-gray-400
                                focus:outline-none focus:ring-2 focus:ring-brand 
-                               text-sm"
-                        placeholder="••••••••••••">
+                               text-sm" placeholder="••••••••••••">
                 </div>
 
                 <!-- Botão -->
-                <button type="submit"
-                    class="w-full py-3 px-4 rounded-lg shadow-sm 
+                <button type="submit" class="w-full py-3 px-4 rounded-lg shadow-sm 
                            text-sm font-semibold text-white 
                            bg-brand hover:bg-brand-hover transition">
                     Entrar
@@ -118,7 +114,10 @@
             </p>
 
         </div>
+
     </div>
 
+
 </body>
+
 </html>
