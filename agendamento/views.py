@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.contrib import messages
-from .models import User, Consulta, Medico, Servico, Plano
+from .models import User, Consulta, Medico, Servico, Plano, Especialidade
 from .forms import RegisterForm, ConsultaCreateForm
 from django.contrib.auth import authenticate, login
 from django.views.generic import TemplateView
@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.http import HttpResponseBadRequest
 from django.db.models import Q
+import time
 
 
 
