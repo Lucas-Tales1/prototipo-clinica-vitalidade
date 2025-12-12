@@ -169,3 +169,67 @@ class CriarConsultaView(View):
 
     def get(self, request):
         return HttpResponseBadRequest("Método não permitido.")
+
+class AgendaAtendenteView(TemplateView):
+    template_name = "agendamento/agenda_atendente.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Pega filtros do GET
+        paciente_q = self.request.GET.get("paciente", "").strip()
+        data = self.request.GET.get("data", "").strip()
+        mes = self.request.GET.get("mes", "").strip()
+        medico_id = self.request.GET.get("medico", "").strip()
+        pagina = self.request.GET.get("page", 1)
+
+        consultas = Consulta.objects.select_related("usuario", "medico", "servico", "plano")
+
+        # Por padrão, mostra apenas consultas futuras
+        if not paciente_q and not data and not mes and not medico_id:
+            consultas = consultas.filter(data_hora__gte=timezone.now())
+
+        # Filtro por paciente (nome ou CPF)
+        if paciente_q:
+            termos = paciente_q.split()
+
+            for termo in termos:
+                consultas = consultas.filter(
+                    Q(usuario__first_name__icontains=termo) |
+                    Q(usuario__last_name__icontains=termo) |
+                    Q(usuario__username__icontains=termo) |
+                    Q(usuario__cpf__icontains=termo)
+                )
+
+        # Filtro por data específica
+        if data:
+            consultas = consultas.filter(data_hora__date=data)
+
+        # Filtro por mês
+        if mes:
+            try:
+                ano, mes_num = mes.split("-")
+                consultas = consultas.filter(data_hora__year=ano, data_hora__month=mes_num)
+            except ValueError:
+                pass
+
+        # Filtro por médico
+        if medico_id:
+            consultas = consultas.filter(medico_id=medico_id)
+
+        consultas = consultas.order_by("data_hora")
+
+        # Paginação
+        paginator = Paginator(consultas, 10)  # 10 agendamentos por página
+        page_obj = paginator.get_page(pagina)
+
+        # Lista de todos os médicos para o filtro
+        medicos = Medico.objects.all()
+
+        context.update({
+            "agendamentos": page_obj,
+            "medicos": medicos,
+            "paginator": paginator,
+            "page_obj": page_obj,
+        })
+        return context
