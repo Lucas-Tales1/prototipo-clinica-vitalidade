@@ -35,9 +35,9 @@
 </head>
 <body class="bg-gray-50 font-sans antialiased text-gray-900 h-screen flex flex-col overflow-hidden">
 
-    <nav class="bg-white shadow-sm border-b border-gray-200 z-50 h-20 flex-shrink-0">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-            <div class="flex justify-between h-full items-center">
+  <nav class="bg-white shadow-sm border-b border-gray-200 z-50 h-20 flex-shrink-0">
+    <div class="w-full px-4 sm:px-6 lg:px-8 h-full">
+        <div class="flex justify-between h-full items-center">
                 <div class="flex items-center">
                     <button id="mobile-menu-btn" class="mr-4 text-gray-500 hover:text-brand lg:hidden focus:outline-none">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -45,7 +45,7 @@
                         </svg>
                     </button>
                     
-                    <img src="{% static 'agendamento/images/logo.png' %}" alt="Logo" class="h-[45px] w-auto mr-3">
+                    <img src="{% static 'agendamento/images/logo.png' %}" alt="Logo" class="h-[60px] w-auto mr-3">
                     </div>
                 <div class="flex items-center space-x-4">
                     <div class="text-right hidden sm:block">
@@ -53,13 +53,13 @@
                         <div class="text-xs text-gray-500">Paciente</div>
                     </div>
                     <img src="https://i.pravatar.cc/150?img=68" alt="Foto Perfil" class="h-10 w-10 rounded-full border border-gray-200 object-cover shadow-sm">
-                    <a href="/logout" class="ml-4 text-sm text-brand-accent hover:text-brand font-medium">Sair</a>
+                    <a href="/login" class="ml-4 text-sm text-brand-accent hover:text-brand font-medium">Sair</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="flex flex-1 overflow-hidden relative max-w-7xl mx-auto w-full">
+    <div class="flex flex-1 overflow-hidden relative w-full">
 
         <aside id="sidebar" class="bg-brand w-64 flex flex-col transition-transform duration-300 absolute inset-y-0 left-0 z-40 transform -translate-x-full lg:relative lg:translate-x-0 lg:shadow-none shadow-2xl h-full">
             
@@ -94,7 +94,7 @@
                 <div class="pt-6 mt-2">
                     <p class="px-4 text-xs font-bold text-blue-300 uppercase tracking-wider mb-3">Acesso Rápido</p>
                     
-                    <a href="/agendar" class="flex items-center px-4 py-2 text-sm text-blue-100 hover:text-white hover:bg-white/5 rounded-lg transition">
+                    <a href="/escolha-servicos" class="flex items-center px-4 py-2 text-sm text-blue-100 hover:text-white hover:bg-white/5 rounded-lg transition">
                         <span class="w-1.5 h-1.5 bg-green-400 rounded-full mr-3"></span>
                         Marcar Consulta
                     </a>
@@ -117,7 +117,7 @@
 
         <main class="flex-1 overflow-y-auto bg-gray-50 p-6 lg:p-10 scroll-smooth w-full">
             
-            <div class="max-w-5xl mx-auto space-y-12">
+            <div class="mx-auto space-y-12">
                 
                 <section>
                     <div class="flex items-center justify-between mb-6">
@@ -161,6 +161,14 @@
                             </div>
                         </div>
                         {% endfor %}
+
+                        <a href="/escolha-servicos" class="border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center p-6 hover:border-brand hover:bg-brand/5 transition duration-200 group cursor-pointer h-full min-h-[200px]">
+                            <div class="w-14 h-14 rounded-full bg-white border border-gray-200 flex items-center justify-center mb-3 group-hover:scale-110 transition shadow-sm">
+                                <svg class="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            </div>
+                            <span class="font-semibold text-brand group-hover:text-brand-hover">Agendar Nova Consulta</span>
+                        </a>
+
                     </div>
                     {% else %}
                         <div class="border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center p-6 text-gray-500">
